@@ -28,7 +28,7 @@ var arrayAccesRegex = regexp.MustCompile(arrayAccesRegexString)
 //
 //    o.Get("books[1].chapters[2].title")
 func (m Map) Get(selector string) *Value {
-	rawObj := access(m, selector, nil, false, false)
+	rawObj := access(m, selector, nil, false, false, false)
 	return &Value{data: rawObj}
 }
 
@@ -43,13 +43,28 @@ func (m Map) Get(selector string) *Value {
 //
 //    o.Set("books[1].chapters[2].title","Time to Go")
 func (m Map) Set(selector string, value interface{}) Map {
-	access(m, selector, value, true, false)
+	access(m, selector, value, true, false, false)
+	return m
+}
+
+// Remove removes the value at the specified selector and
+// returns the object on which Remove was called.
+//
+// Remove can only operate directly on map[string]interface{} and []interface.
+//
+// Example
+//
+// To remove the title of the third chapter of the second book, do:
+//
+//    o.Remove("books[1].chapters[2].title")
+func (m Map) Remove(selector string) Map {
+	access(m, selector, nil, false, true, false)
 	return m
 }
 
 // access accesses the object using the selector and performs the
 // appropriate action.
-func access(current, selector, value interface{}, isSet, panics bool) interface{} {
+func access(current, selector, value interface{}, isSet, isRemove, panics bool) interface{} {
 
 	switch selector.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
@@ -107,8 +122,13 @@ func access(current, selector, value interface{}, isSet, panics bool) interface{
 		switch current.(type) {
 		case map[string]interface{}:
 			curMSI := current.(map[string]interface{})
-			if len(selSegs) <= 1 && isSet {
-				curMSI[thisSel] = value
+			if len(selSegs) <= 1 && (isSet || isRemove) {
+				if isSet {
+					curMSI[thisSel] = value
+				}
+				if isRemove {
+					delete(curMSI, thisSel)
+				}
 				return nil
 			} else {
 				current = curMSI[thisSel]
@@ -136,7 +156,7 @@ func access(current, selector, value interface{}, isSet, panics bool) interface{
 		}
 
 		if len(selSegs) > 1 {
-			current = access(current, selSegs[1], value, isSet, panics)
+			current = access(current, selSegs[1], value, isSet, isRemove, panics)
 		}
 
 	}

@@ -8,43 +8,43 @@ import (
 func TestAccessorsAccessGetSingleField(t *testing.T) {
 
 	current := map[string]interface{}{"name": "Tyler"}
-	assert.Equal(t, "Tyler", access(current, "name", nil, false, true))
+	assert.Equal(t, "Tyler", access(current, "name", nil, false, false, true))
 
 }
 func TestAccessorsAccessGetDeep(t *testing.T) {
 
 	current := map[string]interface{}{"name": map[string]interface{}{"first": "Tyler", "last": "Bunnell"}}
-	assert.Equal(t, "Tyler", access(current, "name.first", nil, false, true))
-	assert.Equal(t, "Bunnell", access(current, "name.last", nil, false, true))
+	assert.Equal(t, "Tyler", access(current, "name.first", nil, false, false, true))
+	assert.Equal(t, "Bunnell", access(current, "name.last", nil, false, false, true))
 
 }
 func TestAccessorsAccessGetDeepDeep(t *testing.T) {
 
 	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{"three": map[string]interface{}{"four": 4}}}}
-	assert.Equal(t, 4, access(current, "one.two.three.four", nil, false, true))
+	assert.Equal(t, 4, access(current, "one.two.three.four", nil, false, false, true))
 
 }
 func TestAccessorsAccessGetInsideArray(t *testing.T) {
 
 	current := map[string]interface{}{"names": []interface{}{map[string]interface{}{"first": "Tyler", "last": "Bunnell"}, map[string]interface{}{"first": "Capitol", "last": "Bollocks"}}}
-	assert.Equal(t, "Tyler", access(current, "names[0].first", nil, false, true))
-	assert.Equal(t, "Bunnell", access(current, "names[0].last", nil, false, true))
-	assert.Equal(t, "Capitol", access(current, "names[1].first", nil, false, true))
-	assert.Equal(t, "Bollocks", access(current, "names[1].last", nil, false, true))
+	assert.Equal(t, "Tyler", access(current, "names[0].first", nil, false, false, true))
+	assert.Equal(t, "Bunnell", access(current, "names[0].last", nil, false, false, true))
+	assert.Equal(t, "Capitol", access(current, "names[1].first", nil, false, false, true))
+	assert.Equal(t, "Bollocks", access(current, "names[1].last", nil, false, false, true))
 
 	assert.Panics(t, func() {
-		access(current, "names[2]", nil, false, true)
+		access(current, "names[2]", nil, false, false, true)
 	})
-	assert.Nil(t, access(current, "names[2]", nil, false, false))
+	assert.Nil(t, access(current, "names[2]", nil, false, false, false))
 
 }
 
 func TestAccessorsAccessGetFromArrayWithInt(t *testing.T) {
 
 	current := []interface{}{map[string]interface{}{"first": "Tyler", "last": "Bunnell"}, map[string]interface{}{"first": "Capitol", "last": "Bollocks"}}
-	one := access(current, 0, nil, false, false)
-	two := access(current, 1, nil, false, false)
-	three := access(current, 2, nil, false, false)
+	one := access(current, 0, nil, false, false, false)
+	two := access(current, 1, nil, false, false, false)
+	three := access(current, 2, nil, false, false, false)
 
 	assert.Equal(t, "Tyler", one.(map[string]interface{})["first"])
 	assert.Equal(t, "Capitol", two.(map[string]interface{})["first"])
@@ -62,10 +62,10 @@ func TestAccessorsGet(t *testing.T) {
 func TestAccessorsAccessSetSingleField(t *testing.T) {
 
 	current := map[string]interface{}{"name": "Tyler"}
-	access(current, "name", "Mat", true, false)
+	access(current, "name", "Mat", true, false, false)
 	assert.Equal(t, current["name"], "Mat")
 
-	access(current, "age", 29, true, true)
+	access(current, "age", 29, true, false, true)
 	assert.Equal(t, current["age"], 29)
 
 }
@@ -73,7 +73,7 @@ func TestAccessorsAccessSetSingleField(t *testing.T) {
 func TestAccessorsAccessSetSingleFieldNotExisting(t *testing.T) {
 
 	current := map[string]interface{}{}
-	access(current, "name", "Mat", true, false)
+	access(current, "name", "Mat", true, false, false)
 	assert.Equal(t, current["name"], "Mat")
 
 }
@@ -82,53 +82,53 @@ func TestAccessorsAccessSetDeep(t *testing.T) {
 
 	current := map[string]interface{}{"name": map[string]interface{}{"first": "Tyler", "last": "Bunnell"}}
 
-	access(current, "name.first", "Mat", true, true)
-	access(current, "name.last", "Ryer", true, true)
+	access(current, "name.first", "Mat", true, false, true)
+	access(current, "name.last", "Ryer", true, false, true)
 
-	assert.Equal(t, "Mat", access(current, "name.first", nil, false, true))
-	assert.Equal(t, "Ryer", access(current, "name.last", nil, false, true))
+	assert.Equal(t, "Mat", access(current, "name.first", nil, false, false, true))
+	assert.Equal(t, "Ryer", access(current, "name.last", nil, false, false, true))
 
 }
 func TestAccessorsAccessSetDeepDeep(t *testing.T) {
 
 	current := map[string]interface{}{"one": map[string]interface{}{"two": map[string]interface{}{"three": map[string]interface{}{"four": 4}}}}
 
-	access(current, "one.two.three.four", 5, true, true)
+	access(current, "one.two.three.four", 5, true, false, true)
 
-	assert.Equal(t, 5, access(current, "one.two.three.four", nil, false, true))
+	assert.Equal(t, 5, access(current, "one.two.three.four", nil, false, false, true))
 
 }
 func TestAccessorsAccessSetArray(t *testing.T) {
 
 	current := map[string]interface{}{"names": []interface{}{"Tyler"}}
 
-	access(current, "names[0]", "Mat", true, true)
+	access(current, "names[0]", "Mat", true, false, true)
 
-	assert.Equal(t, "Mat", access(current, "names[0]", nil, false, true))
+	assert.Equal(t, "Mat", access(current, "names[0]", nil, false, false, true))
 
 }
 func TestAccessorsAccessSetInsideArray(t *testing.T) {
 
 	current := map[string]interface{}{"names": []interface{}{map[string]interface{}{"first": "Tyler", "last": "Bunnell"}, map[string]interface{}{"first": "Capitol", "last": "Bollocks"}}}
 
-	access(current, "names[0].first", "Mat", true, true)
-	access(current, "names[0].last", "Ryer", true, true)
-	access(current, "names[1].first", "Captain", true, true)
-	access(current, "names[1].last", "Underpants", true, true)
+	access(current, "names[0].first", "Mat", true, false, true)
+	access(current, "names[0].last", "Ryer", true, false, true)
+	access(current, "names[1].first", "Captain", true, false, true)
+	access(current, "names[1].last", "Underpants", true, false, true)
 
-	assert.Equal(t, "Mat", access(current, "names[0].first", nil, false, true))
-	assert.Equal(t, "Ryer", access(current, "names[0].last", nil, false, true))
-	assert.Equal(t, "Captain", access(current, "names[1].first", nil, false, true))
-	assert.Equal(t, "Underpants", access(current, "names[1].last", nil, false, true))
+	assert.Equal(t, "Mat", access(current, "names[0].first", nil, false, false, true))
+	assert.Equal(t, "Ryer", access(current, "names[0].last", nil, false, false, true))
+	assert.Equal(t, "Captain", access(current, "names[1].first", nil, false, false, true))
+	assert.Equal(t, "Underpants", access(current, "names[1].last", nil, false, false, true))
 
 }
 
 func TestAccessorsAccessSetFromArrayWithInt(t *testing.T) {
 
 	current := []interface{}{map[string]interface{}{"first": "Tyler", "last": "Bunnell"}, map[string]interface{}{"first": "Capitol", "last": "Bollocks"}}
-	one := access(current, 0, nil, false, false)
-	two := access(current, 1, nil, false, false)
-	three := access(current, 2, nil, false, false)
+	one := access(current, 0, nil, false, false, false)
+	two := access(current, 1, nil, false, false, false)
+	three := access(current, 2, nil, false, false, false)
 
 	assert.Equal(t, "Tyler", one.(map[string]interface{})["first"])
 	assert.Equal(t, "Capitol", two.(map[string]interface{})["first"])
@@ -141,5 +141,26 @@ func TestAccessorsSet(t *testing.T) {
 	current := New(map[string]interface{}{"name": "Tyler"})
 	current.Set("name", "Mat")
 	assert.Equal(t, "Mat", current.Get("name").data)
+
+}
+
+func TestAccessorsRemove(t *testing.T) {
+
+	current := New(map[string]interface{}{"name": "Tyler"})
+	assert.True(t, current.Has("name"))
+	_, ok := current["name"]
+	assert.True(t, ok)
+	current.Remove("name")
+	assert.False(t, current.Has("name"))
+	_, ok = current["name"]
+	assert.False(t, ok)
+
+	current = New(map[string]interface{}{"name": "Tyler"})
+	current.Set("name", nil)
+	_, ok = current["name"]
+	assert.True(t, ok)
+	current.Remove("name")
+	_, ok = current["name"]
+	assert.False(t, ok)
 
 }
