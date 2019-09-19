@@ -1,4 +1,4 @@
-module github.com/stretchr/objx
+module github.com/reillywatson/objx
 
 go 1.12
 
